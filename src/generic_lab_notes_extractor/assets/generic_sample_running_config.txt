@@ -1,0 +1,77 @@
+! GENERIC SAMPLE RUNNING-CONFIG FOR SANITIZED LAB TESTING ONLY
+! All IP addresses use RFC documentation ranges and are not production values.
+!
+version 17.9
+service timestamps debug datetime msec
+service timestamps log datetime msec
+!
+hostname DEMO-SWITCH-01
+!
+aaa new-model
+aaa group server radius DEMO-RADIUS-GROUP
+ server name DEMO-RADIUS-01
+!
+aaa authentication dot1x default group DEMO-RADIUS-GROUP
+aaa authorization network default group DEMO-RADIUS-GROUP
+!
+vtp domain DEMO-LAB
+vtp mode transparent
+!
+vlan 20
+ name DEMO-USERS
+!
+vlan 30
+ name DEMO-VOICE
+!
+vlan 40
+ name DEMO-PRINTERS
+!
+vlan 99
+ name DEMO-MANAGEMENT
+!
+interface GigabitEthernet0/1
+ description DEMO USER WORKSTATION
+ switchport access vlan 20
+ switchport mode access
+ switchport voice vlan 30
+ authentication host-mode multi-domain
+ authentication port-control auto
+ dot1x pae authenticator
+ spanning-tree portfast edge
+!
+interface GigabitEthernet0/2
+ description DEMO PRINTER
+ switchport access vlan 40
+ switchport mode access
+ spanning-tree portfast edge
+!
+interface GigabitEthernet0/23
+ description DEMO UPLINK TO DISTRIBUTION A
+ switchport trunk allowed vlan 20,30,40,99
+ switchport mode trunk
+!
+interface GigabitEthernet0/24
+ description DEMO UPLINK TO DISTRIBUTION B
+ switchport trunk allowed vlan 20,30,40,99
+ switchport mode trunk
+!
+interface Vlan99
+ description DEMO MANAGEMENT
+ ip address 192.0.2.10 255.255.255.0
+ no shutdown
+!
+ip default-gateway 192.0.2.1
+ip name-server 198.51.100.53 203.0.113.53
+!
+radius server DEMO-RADIUS-01
+ address ipv4 198.51.100.20 auth-port 1812 acct-port 1813
+!
+dot1x system-auth-control
+!
+line con 0
+ logging synchronous
+!
+line vty 0 4
+ transport input ssh
+!
+end

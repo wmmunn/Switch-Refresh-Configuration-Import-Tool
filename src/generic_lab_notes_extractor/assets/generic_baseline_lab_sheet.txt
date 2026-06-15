@@ -1,0 +1,127 @@
+GENERIC SWITCH REFRESH LAB SHEET
+================================
+
+SANITIZED BASELINE
+This worksheet contains no customer-specific values. Review every generated
+section before using any configuration on a production device.
+
+
+1. CHANGE IDENTIFICATION
+------------------------
+
+Change / Ticket:
+[OPERATOR INPUT]
+
+Site / Location:
+[OPERATOR INPUT]
+
+Prepared By:
+[OPERATOR INPUT]
+
+Maintenance Window:
+[OPERATOR INPUT]
+
+Source Evidence Reviewed:
+[ ] Running-config
+[ ] Physical / logical uplinks
+[ ] VLAN scope
+[ ] Management addressing
+[ ] Authentication requirements
+
+
+2. EXTRACTED SWITCH IDENTITY
+----------------------------
+
+Switch Hostname:
+{{HOSTNAME}}
+
+VTP Domain:
+{{VTP_DOMAIN}}
+
+
+3. MANAGEMENT
+-------------
+
+Management VLAN:
+{{MGMT_VLAN}}
+
+Management IP Address:
+{{MGMT_IP}}
+
+Management Subnet Mask:
+{{MGMT_MASK}}
+
+Default Gateway:
+{{DEFAULT_GATEWAY}}
+
+
+4. VLAN CREATION COMMANDS
+-------------------------
+
+{{VLAN_LIST}}
+
+
+5. OBSERVED TRUNK VLAN CONFIGURATION
+------------------------------------
+
+{{TRUNK_ALLOWED_VLANS}}
+
+
+6. PROPOSED UPLINK BLOCKS
+-------------------------
+
+Uplink 1:
+{{UPLINK_TRUNK_1}}
+
+Uplink 2:
+{{UPLINK_TRUNK_2}}
+
+Uplink 3:
+{{UPLINK_TRUNK_3}}
+
+Uplink 4:
+{{UPLINK_TRUNK_4}}
+
+Operator Review:
+[ ] Uplink candidates match the intended physical design.
+[ ] Destination interface names were confirmed for the replacement platform.
+[ ] Allowed VLAN lists were reviewed for omissions and obsolete VLANs.
+
+
+7. RADIUS / DOT1X REVIEW
+------------------------
+
+{{RADIUS_STATUS}}
+
+Operator Review:
+[ ] AAA/RADIUS infrastructure was independently confirmed.
+[ ] Authentication commands are appropriate for the destination platform.
+[ ] Removed legacy authentication commands were reviewed.
+
+
+8. ACCESS PORT CONFIGURATION
+----------------------------
+
+{{ACCESS_PORT_CONFIGS}}
+
+Operator Review:
+[ ] Interface numbering was confirmed.
+[ ] Access and voice VLAN assignments were confirmed.
+[ ] Shutdown state and descriptions were reviewed.
+[ ] Lines marked REVIEW REMOVED were evaluated.
+
+
+9. FINAL OPERATOR VALIDATION
+----------------------------
+
+[ ] Generated text was compared with the source running-config.
+[ ] Management reachability plan was confirmed.
+[ ] Uplink and spanning-tree behavior was confirmed.
+[ ] Monitoring, logging, AAA, and time services were reviewed separately.
+[ ] Configuration is approved for controlled execution.
+
+
+NOTES
+-----
+
+[OPERATOR INPUT]

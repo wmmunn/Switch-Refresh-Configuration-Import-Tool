@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include src/generic_lab_notes_extractor/assets *.txt
+recursive-include examples *.txt
