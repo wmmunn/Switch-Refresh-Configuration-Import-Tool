@@ -1,5 +1,7 @@
 ﻿# Switch Refresh Configuration Import Tool
 
+[![tests](https://github.com/wmmunn/Switch-Refresh-Configuration-Import-Tool/actions/workflows/tests.yml/badge.svg)](https://github.com/wmmunn/Switch-Refresh-Configuration-Import-Tool/actions/workflows/tests.yml)
+
 Import selected values from an existing switch configuration into a reviewable
 refresh build template.
 
@@ -111,4 +113,5 @@ MIT License. See [LICENSE](LICENSE).
 
 See [RELEASE_NOTES_v1.0.0.md](RELEASE_NOTES_v1.0.0.md) for the current public
 release summary.
+
 
