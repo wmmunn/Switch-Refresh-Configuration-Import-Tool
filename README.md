@@ -1,17 +1,19 @@
-# Generic Lab Notes Extractor
+﻿# Switch Refresh Configuration Import Tool
 
-A local Windows GUI that extracts reusable Cisco IOS switch details from a
-running-config and inserts them into an operator-reviewed lab sheet.
+Import selected values from an existing switch configuration into a reviewable
+refresh build template.
 
+This local Windows GUI reads an existing Cisco IOS switch configuration, applies
+parsing logic, and fills a prepared refresh build template with reusable values.
 The public edition ships only with fictional sample data. It does not connect
 to network devices, transmit commands, or require credentials.
 
 ## Features
 
-- Extracts hostname, VTP domain, management addressing, VLANs, trunks, likely
-  uplinks, access-port blocks, and RADIUS/dot1x status.
+- Imports hostname, VTP domain, management addressing, VLANs, trunks, likely
+  uplinks, access-port blocks, and RADIUS/dot1x status into a template.
 - Keeps generated output gated by operator review.
-- Uses a bundled generic lab-sheet template and sample running-config.
+- Uses a bundled generic refresh build template and existing-switch config.
 - Processes files locally.
 - Runs with standard Tkinter; `ttkbootstrap` is optional.
 
@@ -19,11 +21,12 @@ to network devices, transmit commands, or require credentials.
 
 ```text
 .
-|-- examples/                         # Generic input files
-|-- src/generic_lab_notes_extractor/  # Application source and bundled assets
-|-- tests/                            # Sanitization and extraction tests
-|-- .github/workflows/tests.yml       # Public CI
-|-- GenericLabNotesExtractor.spec     # Windows EXE build recipe
+|-- examples/                              # Generic input files
+|-- docs/                                  # Project history and design notes
+|-- src/switch_refresh_config_import_tool/ # Application source and bundled assets
+|-- tests/                                 # Sanitization and extraction tests
+|-- .github/workflows/tests.yml            # Public CI
+|-- SwitchRefreshConfigurationImportTool.spec
 |-- pyproject.toml
 |-- LICENSE
 `-- README.md
@@ -37,13 +40,13 @@ Python 3.10 or newer is required.
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -e .[theme]
-generic-lab-notes-extractor
+switch-refresh-config-import-tool
 ```
 
 The application starts with these generic inputs selected:
 
-- `examples/generic_sample_running_config.txt`
-- `examples/generic_baseline_lab_sheet.txt`
+- `examples/generic_existing_switch_config.txt`
+- `examples/generic_refresh_build_template.txt`
 
 Choose an output path, run extraction, and review the generated text before
 using any portion of it.
@@ -54,20 +57,35 @@ using any portion of it.
 python -m unittest discover -s tests -v
 ```
 
+## Project History
+
+The longer sanitized revision trail is kept in
+[`docs/project-history.md`](docs/project-history.md). Use it when tracking
+regressions or understanding why a safety behavior exists.
+
+Recoverable legacy source snapshots are preserved locally outside the public
+repository. They are not included in the GitHub-ready source tree because older
+exact snapshots may contain non-public attribution or internal lineage details.
+
+Archive/cleanup rules are documented in
+[`docs/archive-policy.md`](docs/archive-policy.md). Project artifacts should be
+archived before deletion, renaming, or replacement.
+
 ## Build The Windows EXE
 
 ```powershell
 python -m pip install -e .[build,theme]
-pyinstaller --noconfirm --clean GenericLabNotesExtractor.spec
+pyinstaller --noconfirm --clean SwitchRefreshConfigurationImportTool.spec
 ```
 
-The executable is written to `dist/GenericLabNotesExtractor.exe`. Publish the
-binary through a GitHub Release rather than committing it to the repository.
+The executable is written to `dist/SwitchRefreshConfigurationImportTool.exe`.
+Publish the binary through a GitHub Release rather than committing it to the
+repository.
 
 ## Sanitized Examples
 
-The sample config uses names prefixed with `DEMO` and IP addresses from the
-RFC documentation ranges:
+The generic existing-switch config uses names prefixed with `DEMO` and IP
+addresses from the RFC documentation ranges:
 
 - `192.0.2.0/24`
 - `198.51.100.0/24`
@@ -88,3 +106,9 @@ independent and is not affiliated with or endorsed by Cisco.
 ## License
 
 MIT License. See [LICENSE](LICENSE).
+
+## Release Notes
+
+See [RELEASE_NOTES_v1.0.0.md](RELEASE_NOTES_v1.0.0.md) for the current public
+release summary.
+

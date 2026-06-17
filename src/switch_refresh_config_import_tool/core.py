@@ -13,7 +13,7 @@ except Exception:
     TTKBOOTSTRAP_AVAILABLE = False
 
 
-APP_NAME = "Generic Lab Notes Extractor"
+APP_NAME = "Switch Refresh Configuration Import Tool"
 APP_VERSION = "1.0.0"
 
 
@@ -360,7 +360,7 @@ def extract_interface_description(body):
 
 # Uplink placeholders use source-config order.
 # The old switch interface type does not determine the new 9300 uplink interface.
-# The lab sheet controls destination interfaces such as Te1/1/1 and TeX/1/8.
+# The refresh template controls destination interfaces such as Te1/1/1 and TeX/1/8.
 
 
 def uplink_candidate_score(interface_name, body, vlan_items, original_order):
@@ -406,7 +406,7 @@ def extract_uplink_trunks(config_text, max_uplinks=4):
     Dedicated uplink output for lab-note placeholders.
 
     The old switch interface type does NOT determine the new 9300 uplink
-    interface. The lab sheet controls destination interfaces.
+    interface. The refresh template controls destination interfaces.
 
     This function now ranks trunk candidates so obvious uplink/router/gateway
     descriptions are preferred over ordinary trunk ports.
@@ -747,7 +747,7 @@ class LabNotesExtractorApp:
         self.add_file_row(
             content,
             2,
-            "Completed lab notes output",
+            "Completed refresh build output",
             self.output_file_var,
             self.browse_output_file
         )
@@ -941,7 +941,7 @@ class LabNotesExtractorApp:
 
     def browse_template_file(self):
         filename = filedialog.askopenfilename(
-            title="Select Lab Notes Template",
+            title="Select Refresh Build Template",
             filetypes=[
                 ("Text / Markdown Files", "*.txt *.md"),
                 ("All Files", "*.*")
@@ -952,7 +952,7 @@ class LabNotesExtractorApp:
 
     def browse_output_file(self):
         filename = filedialog.asksaveasfilename(
-            title="Save Completed Lab Notes As",
+            title="Save Completed Refresh Build As",
             defaultextension=".txt",
             filetypes=[
                 ("Text Files", "*.txt"),
@@ -965,7 +965,7 @@ class LabNotesExtractorApp:
 
     def save_blank_template(self):
         filename = filedialog.asksaveasfilename(
-            title="Save Blank Lab Notes Template",
+            title="Save Blank Refresh Build Template",
             defaultextension=".txt",
             filetypes=[
                 ("Text Files", "*.txt"),
@@ -1023,11 +1023,11 @@ class LabNotesExtractorApp:
             return None
 
         if not template_file:
-            messagebox.showerror("Missing File", "Please select the lab notes template file.")
+            messagebox.showerror("Missing File", "Please select the refresh build template file.")
             return None
 
         if not output_file:
-            messagebox.showerror("Missing File", "Please choose the completed lab notes output file.")
+            messagebox.showerror("Missing File", "Please choose the completed refresh build output file.")
             return None
 
         if not Path(config_file).exists():

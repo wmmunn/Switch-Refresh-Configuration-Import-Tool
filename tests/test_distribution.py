@@ -7,32 +7,32 @@ PROJECT_DIR = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_DIR / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from generic_lab_notes_extractor import app as MODULE
+from switch_refresh_config_import_tool import app as MODULE
 
 
-BASELINE_PATH = (
+TEMPLATE_PATH = (
     SRC_DIR
-    / "generic_lab_notes_extractor"
+    / "switch_refresh_config_import_tool"
     / "assets"
-    / "generic_baseline_lab_sheet.txt"
+    / "generic_refresh_build_template.txt"
 )
-SAMPLE_CONFIG_PATH = (
+CONFIG_PATH = (
     SRC_DIR
-    / "generic_lab_notes_extractor"
+    / "switch_refresh_config_import_tool"
     / "assets"
-    / "generic_sample_running_config.txt"
+    / "generic_existing_switch_config.txt"
 )
 
 
 class SanitizedDistributionTests(unittest.TestCase):
-    def test_baseline_contains_every_supported_placeholder(self):
-        baseline = BASELINE_PATH.read_text(encoding="utf-8")
+    def test_template_contains_every_supported_placeholder(self):
+        template = TEMPLATE_PATH.read_text(encoding="utf-8")
         for placeholder in MODULE.PLACEHOLDERS:
             with self.subTest(placeholder=placeholder):
-                self.assertIn(placeholder, baseline)
+                self.assertIn(placeholder, template)
 
-    def test_baseline_contains_no_example_network_values(self):
-        baseline = BASELINE_PATH.read_text(encoding="utf-8").lower()
+    def test_template_contains_no_example_network_values(self):
+        template = TEMPLATE_PATH.read_text(encoding="utf-8").lower()
         forbidden = (
             "10.0.0.",
             "192.168.",
@@ -41,9 +41,9 @@ class SanitizedDistributionTests(unittest.TestCase):
         )
         for value in forbidden:
             with self.subTest(value=value):
-                self.assertNotIn(value, baseline)
+                self.assertNotIn(value, template)
 
-    def test_sanitized_extraction_uses_generic_baseline(self):
+    def test_sanitized_extraction_uses_generic_template(self):
         config = """hostname SANITIZED-SW
 vtp domain GENERIC
 ip default-gateway 198.51.100.1
@@ -61,14 +61,14 @@ interface GigabitEthernet0/1
 !
 """
         values = MODULE.extract_config_values(config)
-        output = MODULE.apply_template(MODULE.load_bundled_baseline_text(), values)
+        output = MODULE.apply_template(MODULE.load_bundled_template_text(), values)
 
         self.assertIn("SANITIZED-SW", output)
         self.assertIn("interface G1/0/1", output)
         self.assertNotIn("{{HOSTNAME}}", output)
 
-    def test_generic_sample_config_is_sanitized_and_exercises_extraction(self):
-        config = SAMPLE_CONFIG_PATH.read_text(encoding="utf-8")
+    def test_generic_existing_config_is_sanitized_and_exercises_extraction(self):
+        config = CONFIG_PATH.read_text(encoding="utf-8")
         lowered = config.lower()
 
         self.assertIn("hostname demo-switch-01", lowered)

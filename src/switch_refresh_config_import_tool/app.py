@@ -18,43 +18,43 @@ from .core import (
 )
 
 
-APP_NAME = "Generic Lab Notes Extractor"
+APP_NAME = "Switch Refresh Configuration Import Tool"
 APP_VERSION = "1.0.0"
-BASELINE_DISPLAY_NAME = "Bundled Generic Baseline Lab Sheet"
-BASELINE_FILENAME = "generic_baseline_lab_sheet.txt"
-SAMPLE_CONFIG_DISPLAY_NAME = "Bundled Generic Sample Running-Config"
-SAMPLE_CONFIG_FILENAME = "generic_sample_running_config.txt"
+TEMPLATE_DISPLAY_NAME = "Bundled Generic Refresh Build Template"
+TEMPLATE_FILENAME = "generic_refresh_build_template.txt"
+CONFIG_DISPLAY_NAME = "Bundled Generic Existing Switch Config"
+CONFIG_FILENAME = "generic_existing_switch_config.txt"
 
 
 def bundled_resource_path(filename: str) -> Path:
     if hasattr(sys, "_MEIPASS"):
         return (
             Path(sys._MEIPASS)
-            / "generic_lab_notes_extractor"
+            / "switch_refresh_config_import_tool"
             / "assets"
             / filename
         )
     return Path(__file__).resolve().parent / "assets" / filename
 
 
-def load_bundled_baseline_text() -> str:
-    return read_text_file(bundled_resource_path(BASELINE_FILENAME))
+def load_bundled_template_text() -> str:
+    return read_text_file(bundled_resource_path(TEMPLATE_FILENAME))
 
 
-def load_bundled_sample_config_text() -> str:
-    return read_text_file(bundled_resource_path(SAMPLE_CONFIG_FILENAME))
+def load_bundled_config_text() -> str:
+    return read_text_file(bundled_resource_path(CONFIG_FILENAME))
 
 
-class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
+class SwitchRefreshConfigImportApp(LabNotesExtractorApp):
     app_name = APP_NAME
     app_version = APP_VERSION
-    template_button_text = "Save Generic Baseline"
+    template_button_text = "Save Refresh Template"
     credit_text = "Sanitized distribution"
 
     def __init__(self, root):
         super().__init__(root)
-        self.config_file_var.set(SAMPLE_CONFIG_DISPLAY_NAME)
-        self.template_file_var.set(BASELINE_DISPLAY_NAME)
+        self.config_file_var.set(CONFIG_DISPLAY_NAME)
+        self.template_file_var.set(TEMPLATE_DISPLAY_NAME)
         self.status_var.set(
             "Ready. Both generic input files are selected; choose an output file."
         )
@@ -65,17 +65,17 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
     def add_distribution_buttons(self, parent):
         self._button(
             parent,
-            "Save Generic Sample Config",
-            self.save_sample_config,
+            "Save Generic Existing Config",
+            self.save_config,
             "secondary-outline",
         ).grid(row=4, column=2, sticky="e", pady=(8, 2))
 
-    def save_sample_config(self):
+    def save_config(self):
         from tkinter import filedialog
 
         filename = filedialog.asksaveasfilename(
-            title="Save Generic Sample Running-Config",
-            initialfile="generic_sample_running_config.txt",
+            title="Save Generic Existing Switch Config",
+            initialfile="generic_existing_switch_config.txt",
             defaultextension=".txt",
             filetypes=[
                 ("Text / Config Files", "*.txt *.cfg *.conf"),
@@ -86,22 +86,22 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
             return
 
         try:
-            write_text_file(filename, load_bundled_sample_config_text())
+            write_text_file(filename, load_bundled_config_text())
             self.config_file_var.set(filename)
-            self.status_var.set(f"Generic sample running-config saved: {filename}")
+            self.status_var.set(f"Generic existing switch config saved: {filename}")
             messagebox.showinfo(
-                "Generic Sample Saved",
-                f"Generic sample running-config saved to:\n{filename}",
+                "Generic Config Saved",
+                f"Generic existing switch config saved to:\n{filename}",
             )
         except Exception as exc:
-            messagebox.showerror("Generic Sample Error", str(exc))
+            messagebox.showerror("Generic Config Error", str(exc))
 
     def save_blank_template(self):
         from tkinter import filedialog
 
         filename = filedialog.asksaveasfilename(
-            title="Save Generic Baseline Lab Sheet",
-            initialfile="generic_baseline_lab_sheet.txt",
+            title="Save Generic Refresh Build Template",
+            initialfile="generic_refresh_build_template.txt",
             defaultextension=".txt",
             filetypes=[
                 ("Text Files", "*.txt"),
@@ -113,19 +113,19 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
             return
 
         try:
-            write_text_file(filename, load_bundled_baseline_text())
+            write_text_file(filename, load_bundled_template_text())
             self.template_file_var.set(filename)
-            self.status_var.set(f"Generic baseline saved: {filename}")
+            self.status_var.set(f"Generic refresh build template saved: {filename}")
             messagebox.showinfo(
-                "Baseline Saved",
-                f"Generic baseline lab sheet saved to:\n{filename}",
+                "Template Saved",
+                f"Generic refresh build template saved to:\n{filename}",
             )
         except Exception as exc:
-            messagebox.showerror("Baseline Error", str(exc))
+            messagebox.showerror("Template Error", str(exc))
 
     def clear(self):
-        self.config_file_var.set(SAMPLE_CONFIG_DISPLAY_NAME)
-        self.template_file_var.set(BASELINE_DISPLAY_NAME)
+        self.config_file_var.set(CONFIG_DISPLAY_NAME)
+        self.template_file_var.set(TEMPLATE_DISPLAY_NAME)
         self.output_file_var.set("")
         self.access_port_type_var.set("G")
         self.status_var.set(
@@ -140,22 +140,22 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
         if not config_file:
             messagebox.showerror(
                 "Missing File",
-                "Please select a sanitized old-switch running-config file.",
+                "Please select a sanitized existing switch configuration file.",
             )
             return None
         if not output_file:
             messagebox.showerror(
                 "Missing File",
-                "Please choose the completed lab notes output file.",
+                "Please choose the completed refresh build output file.",
             )
             return None
-        if config_file != SAMPLE_CONFIG_DISPLAY_NAME and not Path(config_file).exists():
+        if config_file != CONFIG_DISPLAY_NAME and not Path(config_file).exists():
             messagebox.showerror(
                 "File Not Found",
-                f"Running-config file not found:\n{config_file}",
+                f"Existing switch configuration file not found:\n{config_file}",
             )
             return None
-        if template_file != BASELINE_DISPLAY_NAME and not Path(template_file).exists():
+        if template_file != TEMPLATE_DISPLAY_NAME and not Path(template_file).exists():
             messagebox.showerror(
                 "File Not Found",
                 f"Template file not found:\n{template_file}",
@@ -171,12 +171,12 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
 
         config_file, template_file, output_file = validated
         try:
-            if config_file == SAMPLE_CONFIG_DISPLAY_NAME:
-                config_text = load_bundled_sample_config_text()
+            if config_file == CONFIG_DISPLAY_NAME:
+                config_text = load_bundled_config_text()
             else:
                 config_text = read_text_file(config_file)
-            if template_file == BASELINE_DISPLAY_NAME:
-                template_text = load_bundled_baseline_text()
+            if template_file == TEMPLATE_DISPLAY_NAME:
+                template_text = load_bundled_template_text()
             else:
                 template_text = read_text_file(template_file)
 
@@ -195,7 +195,7 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
             )
             messagebox.showinfo(
                 "Extraction Complete",
-                "Generic lab notes created successfully.\n\n"
+                "Refresh build template imported successfully.\n\n"
                 f"Fields extracted: {found_count} of {len(values)}\n\n"
                 f"Saved to:\n{output_file}",
             )
@@ -206,7 +206,7 @@ class SanitizedLabNotesExtractorApp(LabNotesExtractorApp):
 
 def main():
     root = tb.Window(themename="flatly") if TTKBOOTSTRAP_AVAILABLE else tk.Tk()
-    SanitizedLabNotesExtractorApp(root)
+    SwitchRefreshConfigImportApp(root)
     root.mainloop()
 
 

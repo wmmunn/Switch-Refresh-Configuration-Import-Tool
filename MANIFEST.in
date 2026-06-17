@@ -1,4 +1,6 @@
 include LICENSE
 include README.md
-recursive-include src/generic_lab_notes_extractor/assets *.txt
+recursive-include src/switch_refresh_config_import_tool/assets *.txt
 recursive-include examples *.txt
+recursive-include docs *.md
+include docs/archive-policy.md

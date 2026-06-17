@@ -14,23 +14,23 @@ a = Analysis(
         (
             str(
                 source_root
-                / "generic_lab_notes_extractor"
+                / "switch_refresh_config_import_tool"
                 / "assets"
-                / "generic_baseline_lab_sheet.txt"
+                / "generic_refresh_build_template.txt"
             ),
-            "generic_lab_notes_extractor/assets",
+            "switch_refresh_config_import_tool/assets",
         ),
         (
             str(
                 source_root
-                / "generic_lab_notes_extractor"
+                / "switch_refresh_config_import_tool"
                 / "assets"
-                / "generic_sample_running_config.txt"
+                / "generic_existing_switch_config.txt"
             ),
-            "generic_lab_notes_extractor/assets",
+            "switch_refresh_config_import_tool/assets",
         ),
     ],
-    hiddenimports=["generic_lab_notes_extractor.core"],
+    hiddenimports=["switch_refresh_config_import_tool.core"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -46,7 +46,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name="GenericLabNotesExtractor",
+    name="SwitchRefreshConfigurationImportTool",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
