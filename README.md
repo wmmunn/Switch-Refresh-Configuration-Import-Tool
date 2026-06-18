@@ -11,6 +11,11 @@ parsing logic, and fills a prepared refresh build template with reusable values.
 The public edition ships only with fictional sample data. It does not connect
 to network devices, transmit commands, or require credentials.
 
+![Sanitized Switch Refresh Configuration Import Tool GUI](docs/gui-preview.png)
+
+The image uses synthetic paths, placeholder device names, and fictional
+configuration snippets.
+
 ## Features
 
 - Imports hostname, VTP domain, management addressing, VLANs, trunks, likely
