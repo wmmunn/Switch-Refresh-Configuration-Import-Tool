@@ -45,6 +45,9 @@ python -m pip install -e .[theme]
 switch-refresh-config-import-tool
 ```
 
+For dependency scanners that expect a classic Python manifest, `requirements.txt`
+lists the optional GUI theme dependency.
+
 The application starts with these generic inputs selected:
 
 - `examples/generic_existing_switch_config.txt`
