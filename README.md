@@ -1,6 +1,7 @@
 ﻿# Switch Refresh Configuration Import Tool
 
 [![tests](https://github.com/wmmunn/Switch-Refresh-Configuration-Import-Tool/actions/workflows/tests.yml/badge.svg)](https://github.com/wmmunn/Switch-Refresh-Configuration-Import-Tool/actions/workflows/tests.yml)
+[![Known Vulnerabilities](https://snyk.io/test/github/wmmunn/Switch-Refresh-Configuration-Import-Tool/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/wmmunn/Switch-Refresh-Configuration-Import-Tool?targetFile=requirements.txt)
 
 Import selected values from an existing switch configuration into a reviewable
 refresh build template.
