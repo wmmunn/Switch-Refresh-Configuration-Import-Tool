@@ -62,6 +62,17 @@ The application starts with these generic inputs selected:
 Choose an output path, run extraction, and review the generated text before
 using any portion of it.
 
+## Template Customization
+
+The refresh build template is intentionally a plain text file. Users can adapt
+it to match their own base-build standards, review workflow, change-control
+language, and required placeholders.
+
+The tool fills supported placeholders with targeted values from the existing
+configuration. It does not prescribe a complete target architecture, replace an
+organization's standard base configuration process, or harvest unsupported
+sections from the old switch config.
+
 ## Run Tests
 
 ```powershell
