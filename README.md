@@ -145,6 +145,12 @@ Generated output is review material, not an approved device configuration.
 Confirm interface mappings, VLAN scope, uplinks, management addressing,
 authentication behavior, and every line marked for review.
 
+For stack refresh work, users are responsible for building and verifying the
+new stack before applying any generated configuration. Confirm physical stack
+member order, member numbering, target interface orientation, and that the
+intended active/master switch is in control before using imported interface
+configuration.
+
 Cisco and Cisco IOS are trademarks of Cisco Systems, Inc. This project is
 independent and is not affiliated with or endorsed by Cisco.
 

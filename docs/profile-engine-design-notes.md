@@ -22,11 +22,20 @@ A profile engine would let users define environment-specific rules such as:
 - Trunk VLAN import behavior.
 - Shutdown-state review requirements.
 - Management interface or SVI import rules.
+- Source-to-target interface translation rules.
+- Stack member mapping and target stack interface schemes.
 - Values that should always require operator review.
 
 The engine should suggest and stage values, not silently approve them. Uplinks,
 port-channels, trunk allowed VLAN lists, management addressing, shutdown state,
 and authentication-related settings should remain review-gated.
+
+Stack-aware translation must remain explicit and review-gated. Users are
+responsible for building the replacement stack, confirming physical member
+order, identifying target member numbers, and verifying that the intended
+active/master switch is in control before applying generated configuration.
+The profile engine may assist with member-aware interface translation, but it
+must not imply that physical stack orientation has been validated.
 
 ## Example Profile Concepts
 
@@ -46,12 +55,31 @@ access_ports:
   preserve_voice_vlan: true
   preserve_portfast: true
 
+interface_translation:
+  access_ports:
+    mode: same_member_same_port
+    source_pattern: GigabitEthernet{member}/0/{port}
+    target_pattern: GigabitEthernet{member}/0/{port}
+
+  uplinks:
+    mode: explicit
+    mappings:
+      GigabitEthernet1/0/49: TenGigabitEthernet1/1/1
+      GigabitEthernet1/0/52: TenGigabitEthernet2/1/1
+
+stack_translation:
+  enabled: true
+  member_mapping:
+    1: 1
+    2: 2
+
 safety:
   require_review_for:
     - port_channels
     - trunk_allowed_vlans
     - shutdown_state
     - management_ip
+    - stack_member_mapping
 ```
 
 ## Implementation Notes
@@ -93,4 +121,3 @@ This should be treated as a v1.1 or v2.0 planning item depending on scope. If
 the first version only supports a few explicit review-gated rules, v1.1 is
 reasonable. If the schema becomes a broader translation framework, it should be
 handled as v2.0.
-
