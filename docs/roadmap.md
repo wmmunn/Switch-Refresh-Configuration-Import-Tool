@@ -58,6 +58,9 @@ current design notes.
 Fixture intake and promotion rules are documented in
 [`fixture-strategy.md`](fixture-strategy.md).
 
+The working schema draft for future profile support is documented in
+[`profile-schema-draft.md`](profile-schema-draft.md).
+
 ## Larger v2.0 Possibility
 
 If configurable profiles become a broad translation framework, the work should
