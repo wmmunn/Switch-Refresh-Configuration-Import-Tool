@@ -55,6 +55,9 @@ operator-reviewed.
 See [`profile-engine-design-notes.md`](profile-engine-design-notes.md) for the
 current design notes.
 
+Fixture intake and promotion rules are documented in
+[`fixture-strategy.md`](fixture-strategy.md).
+
 ## Larger v2.0 Possibility
 
 If configurable profiles become a broad translation framework, the work should

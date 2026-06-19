@@ -235,3 +235,14 @@ When changing parser or GUI behavior, verify:
   and checksum.
 - Generated output still requires operator review.
 
+## Post-Release Validation
+
+After the v1.0.0 public release, the import workflow was tested against five
+additional private work-environment running-configs. The workflow completed
+successfully in those tests, with no runtime failures or immediate parser
+regressions observed.
+
+This validation note is intentionally high-level. Private source configs,
+environment identifiers, and operational details are not included in the public
+project history.
+
