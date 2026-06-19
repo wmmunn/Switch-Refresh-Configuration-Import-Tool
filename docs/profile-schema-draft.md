@@ -292,6 +292,8 @@ InterfaceModel
 - Validate profiles before evaluating configs.
 - Treat invalid profiles as review-blocking.
 - Add sanitized fixture tests before connecting new schema behavior to the GUI.
+- Follow the explainability rule in
+  [`development-principles.md`](development-principles.md).
 
 ## Open Questions
 
@@ -304,4 +306,3 @@ InterfaceModel
   the renderer?
 - Should inferred uplinks ever populate final output automatically, or only
   review sections?
-
