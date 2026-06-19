@@ -15,11 +15,11 @@ devices.
 
 1. Preserve v1.0.0 as the stable public baseline.
 2. Track post-release validation findings using sanitized examples.
-3. Improve the import report so operators can quickly see what was imported,
-   skipped, or marked for review.
-4. Keep new parser behavior narrow, tested, and documented with sanitized
+3. Keep release packaging repeatable and unambiguous.
+4. Keep documentation clear for first-time users.
+5. Keep new parser behavior narrow, tested, and documented with sanitized
    fixtures.
-5. Avoid adding more hard-coded site assumptions before the profile design is
+6. Avoid adding more hard-coded site assumptions before the profile design is
    settled.
 
 ## Candidate v1.1 Work
@@ -30,6 +30,10 @@ devices.
 - Better explanation of likely uplink and trunk detection.
 - Documentation updates based on field testing.
 - Initial profile-engine scaffold if the scope remains small and review-gated.
+
+Import report clarity is not an immediate rewrite target. Revisit it if field
+testing shows confusion about imported values, skipped values, or
+review-required sections.
 
 ## Profile Engine Direction
 
@@ -63,4 +67,3 @@ direction would likely include:
 - Sanitized fixture coverage for each supported rule type.
 - A clearer separation between parser logic, profile rules, GUI presentation,
   and file I/O.
-

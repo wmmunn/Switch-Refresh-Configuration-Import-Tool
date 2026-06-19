@@ -82,6 +82,9 @@ Archive/cleanup rules are documented in
 [`docs/archive-policy.md`](docs/archive-policy.md). Project artifacts should be
 archived before deletion, renaming, or replacement.
 
+Public release packaging should follow
+[`docs/release-checklist.md`](docs/release-checklist.md).
+
 Future planning is tracked in [`docs/roadmap.md`](docs/roadmap.md), including
 notes on a possible configurable profile engine.
 
