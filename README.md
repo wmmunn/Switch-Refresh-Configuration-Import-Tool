@@ -73,6 +73,23 @@ configuration. It does not prescribe a complete target architecture, replace an
 organization's standard base configuration process, or harvest unsupported
 sections from the old switch config.
 
+Supported extracted values in the current public release include:
+
+- Switch identity, including hostname and VTP domain.
+- Management VLAN, management IP address, subnet mask, and default gateway.
+- VLAN creation entries discovered in the source config.
+- Observed trunk allowed VLAN lists.
+- Likely uplink/trunk interface blocks.
+- Access-port interface blocks, including descriptions, access VLANs, voice
+  VLANs, shutdown state, and supported edge-port lines.
+- RADIUS/dot1x presence or status for operator review.
+
+Unsupported or organization-specific sections, such as ACLs, SNMP, logging,
+NTP, QoS policy, banners, and full AAA policy, are not broadly harvested into
+the template by default. They should be handled through the user's normal
+architecture standards and review process unless a future profile or template
+explicitly supports them.
+
 ## Run Tests
 
 ```powershell
