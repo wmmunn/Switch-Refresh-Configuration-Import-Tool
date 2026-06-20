@@ -38,6 +38,14 @@ configuration snippets.
 - Processes files locally.
 - Runs with standard Tkinter; `ttkbootstrap` is optional.
 
+
+## 📖 Target Profile Documentation
+
+If you are using the **Target Build Planner** workflow, you must supply a JSON target profile to guide the switch interface migration engine. 
+
+For complete, step-by-step instructions on how to configure your hardware ranges, update stack member mappings, and avoid port collisions, read the comprehensive [Target Profile Configuration Guide](docs/target-profiles.md).
+
+
 ## Repository Layout
 
 ```text
