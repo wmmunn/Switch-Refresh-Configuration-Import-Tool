@@ -51,6 +51,7 @@ families include:
 - Trunk allowed VLAN import behavior.
 - Shutdown-state review requirements.
 - Management interface or SVI import rules.
+- Port-offset-aware stack member consolidation (mapping multiple smaller old members onto port sub-ranges within one larger new member, rather than 1:1 by member ID only).
 
 The planner should suggest and stage values, not silently approve them.
 Uplinks, port-channels, trunk allowed VLAN lists, management addressing,
