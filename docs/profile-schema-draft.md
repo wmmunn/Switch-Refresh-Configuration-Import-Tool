@@ -1,9 +1,11 @@
 # Profile Schema Draft
 
-Status: Draft design notes for future engine work
+Status: Historical draft; v1.1.0 implements a smaller JSON target profile schema
 
-This document describes the intended shape of a future user-customizable
-profile schema. It is not implemented in v1.0.0.
+This document describes the broader intended shape of a user-customizable
+profile schema. v1.1.0 implements a smaller JSON target profile schema in
+`profile_schema.py`; current behavior is documented in
+[`profile-engine-design-notes.md`](profile-engine-design-notes.md).
 
 The goal is to let users encode their own refresh assumptions without baking
 site-specific rules into Python logic.

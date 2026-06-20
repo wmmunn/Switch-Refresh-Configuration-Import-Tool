@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "switch-refresh-config-import-tool"
-version = "1.0.0"
-description = "Local GUI for importing selected values from an existing switch configuration into a reviewable refresh build template."
+version = "1.1.0"
+description = "Local GUI for importing selected switch configuration values and planning review-gated target switch build sheets."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

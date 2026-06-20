@@ -14,7 +14,7 @@ except Exception:
 
 
 APP_NAME = "Switch Refresh Configuration Import Tool"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 
 
 PLACEHOLDERS = [
@@ -459,6 +459,9 @@ def is_physical_access_candidate(interface_name, body):
     """
     interface_name = interface_name.strip()
 
+    if not any(line.strip() for line in body.splitlines()):
+        return False
+
     excluded_prefixes = (
         "vlan",
         "loopback",
@@ -661,8 +664,8 @@ class LabNotesExtractorApp:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{self.app_name} v{self.app_version}")
-        self.root.geometry("1040x720")
-        self.root.minsize(860, 620)
+        self.root.geometry("1280x780")
+        self.root.minsize(1100, 680)
 
         self.config_file_var = tk.StringVar()
         self.template_file_var = tk.StringVar()
@@ -684,7 +687,8 @@ class LabNotesExtractorApp:
 
     def build_gui(self):
         if TTKBOOTSTRAP_AVAILABLE:
-            self.root.style.configure(
+            root_style = getattr(self.root, "style", ttk.Style(self.root))
+            root_style.configure(
                 "Tool.TLabelframe.Label",
                 font=("Segoe UI", 10, "bold"),
             )
@@ -694,22 +698,26 @@ class LabNotesExtractorApp:
 
         header = ttk.Frame(top)
         header.grid(row=0, column=0, sticky="we", pady=(0, 12))
+        header.columnconfigure(0, weight=1)
         ttk.Label(
             header,
             text=self.app_name,
             font=("Segoe UI", 17, "bold"),
-        ).pack(side="left")
+            anchor="w",
+        ).grid(row=0, column=0, sticky="w")
         ttk.Label(
             header,
             text=f"v{self.app_version}",
             font=("Segoe UI", 10),
             foreground="#5c6b73",
-        ).pack(side="left", padx=(8, 0), pady=(6, 0))
+        ).grid(row=0, column=1, sticky="w", padx=(8, 0), pady=(6, 0))
         ttk.Label(
             header,
             text="Local file processing only; review generated configuration before use.",
             foreground="#5c6b73",
-        ).pack(side="right", pady=(6, 0))
+            wraplength=360,
+            justify="right",
+        ).grid(row=0, column=2, sticky="e", padx=(12, 0), pady=(6, 0))
         top.columnconfigure(0, weight=1)
 
         notebook = ttk.Notebook(self.root)
@@ -719,6 +727,7 @@ class LabNotesExtractorApp:
         reference_tab = ttk.Frame(notebook, padding=12)
         notebook.add(workflow_tab, text="Extraction Workflow")
         notebook.add(reference_tab, text="Template Reference")
+        self.add_extra_tabs(notebook)
 
         content = ttk.LabelFrame(
             workflow_tab,
@@ -754,7 +763,7 @@ class LabNotesExtractorApp:
 
         access_label = ttk.Label(
             content,
-            text="New access port prefix",
+            text="Legacy output port prefix",
             anchor="w",
         )
         access_label.grid(row=3, column=0, sticky="w", pady=6)
@@ -770,8 +779,10 @@ class LabNotesExtractorApp:
 
         ttk.Label(
             content,
-            text="G produces G1/0/5; Fi produces Fi1/0/5.",
+            text="Extraction Workflow only. Profile Engine uses Target Profile Options.",
             foreground="#5c6b73",
+            wraplength=460,
+            justify="left",
         ).grid(row=3, column=1, columnspan=2, sticky="w", padx=(105, 8), pady=6)
 
         template_button = self._button(
@@ -823,6 +834,8 @@ class LabNotesExtractorApp:
             workflow_tab,
             textvariable=self.status_var,
             font=("Segoe UI", 11, "bold"),
+            wraplength=1080,
+            justify="left",
         ).pack(fill="x", pady=(0, 10))
 
         review_frame = ttk.LabelFrame(
@@ -919,14 +932,17 @@ class LabNotesExtractorApp:
         label = ttk.Label(parent, text=label_text, anchor="w")
         label.grid(row=row, column=0, sticky="w", pady=6)
 
-        entry = ttk.Entry(parent, textvariable=variable, width=70)
+        entry = ttk.Entry(parent, textvariable=variable, width=52)
         entry.grid(row=row, column=1, sticky="ew", padx=8, pady=6)
 
         button = self._button(parent, "Browse", command, "primary-outline")
-        button.grid(row=row, column=2, pady=6)
+        button.grid(row=row, column=2, sticky="e", pady=6)
 
     def add_distribution_buttons(self, parent):
         """Allow packaged editions to add fixture-export actions."""
+
+    def add_extra_tabs(self, notebook):
+        """Allow packaged editions to add additional workflow tabs."""
 
     def browse_config_file(self):
         filename = filedialog.askopenfilename(

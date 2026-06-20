@@ -4,10 +4,15 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/wmmunn/Switch-Refresh-Configuration-Import-Tool/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/wmmunn/Switch-Refresh-Configuration-Import-Tool?targetFile=requirements.txt)
 
 Import selected values from an existing switch configuration into a reviewable
-refresh build template.
+refresh build template, and optionally plan a target switch build sheet through
+an explicit profile-driven mapping engine.
 
 This local Windows GUI reads an existing Cisco IOS switch configuration, applies
 parsing logic, and fills a prepared refresh build template with reusable values.
+Version 1.1.0 adds the Target Build Planner: a review-gated engine path that
+parses source interfaces, applies a user-owned target profile, exposes mapping
+evidence, and renders a human-reviewable new switch build sheet.
+
 The public edition ships only with fictional sample data. It does not connect
 to network devices, transmit commands, or require credentials.
 
@@ -20,6 +25,14 @@ configuration snippets.
 
 - Imports hostname, VTP domain, management addressing, VLANs, trunks, likely
   uplinks, access-port blocks, and RADIUS/dot1x status into a template.
+- Adds a Target Build Planner workflow for explicit source-to-target interface
+  mapping.
+- Supports target profiles for access-port naming, mixed target interface
+  layouts, stack member mapping, and explicit uplink destinations.
+- Exposes collisions, unmapped interfaces, stack member shifts, unsupported
+  interface names, trunk evidence, and malformed parser blocks instead of
+  silently guessing.
+- Renders review notes and warnings as Cisco comment lines beginning with `!`.
 - Keeps generated output gated by operator review.
 - Uses a bundled generic refresh build template and existing-switch config.
 - Processes files locally.
@@ -62,6 +75,22 @@ The application starts with these generic inputs selected:
 Choose an output path, run extraction, and review the generated text before
 using any portion of it.
 
+The original **Extraction Workflow** tab remains available for the simple
+template-fill path. Its `Legacy output port prefix` dropdown controls only that
+legacy workflow.
+
+The **Target Build Planner** tab is the newer profile-driven workflow. It uses:
+
+1. A source running-config.
+2. A target profile that defines interface naming and uplink mapping rules.
+3. A review output template.
+4. A new switch build sheet output path.
+
+The Target Build Planner does not infer a target design from switch model names
+or source interface names. Target interface naming is profile-owned. Operators
+can use the visible Target Profile Options controls for common layouts, or save
+and review the generated JSON profile when deeper customization is needed.
+
 ## Template Customization
 
 The refresh build template is intentionally a plain text file. Users can adapt
@@ -90,6 +119,36 @@ the template by default. They should be handled through the user's normal
 architecture standards and review process unless a future profile or template
 explicitly supports them.
 
+## Target Build Planner
+
+The Target Build Planner breaks the refresh process into smaller, testable
+parts:
+
+- `source_parser.py` reads the raw source configuration and produces structured
+  `SourceSwitchConfig` data.
+- `profile_schema.py` loads the target profile into typed schema objects.
+- `mapping_engine.py` combines the source config and target profile into a
+  `TargetRefreshPlan`.
+- `plan_renderer.py` renders that plan into template placeholders for a
+  reviewable new switch build sheet.
+- The Tkinter GUI gathers operator choices, runs the engine, and displays the
+  audit panel and preview. It does not own the mapping logic.
+
+The engine follows an "Expose, Don't Guess" rule:
+
+- Unsupported interface names are left unmapped.
+- Missing stack member mappings are warning conditions.
+- Non-identity stack member mappings are flagged for review even when they are
+  collision-free.
+- Target interface collisions are critical findings with shared collision
+  evidence on every affected mapping.
+- Uplinks and port-channel members remain visible and review-gated.
+- Dot1x/RADIUS is visibility-only in this release; it is not translated into a
+  target authentication design.
+
+All generated output remains review material. A clean audit panel does not mean
+the output is approved for device deployment.
+
 ## Run Tests
 
 ```powershell
@@ -113,8 +172,9 @@ archived before deletion, renaming, or replacement.
 Public release packaging should follow
 [`docs/release-checklist.md`](docs/release-checklist.md).
 
-Future planning is tracked in [`docs/roadmap.md`](docs/roadmap.md), including
-notes on a possible configurable profile engine.
+Future planning is tracked in [`docs/roadmap.md`](docs/roadmap.md). Current
+Target Build Planner architecture notes are documented in
+[`docs/profile-engine-design-notes.md`](docs/profile-engine-design-notes.md).
 
 ## Build The Windows EXE
 
@@ -160,7 +220,8 @@ MIT License. See [LICENSE](LICENSE).
 
 ## Release Notes
 
-See [RELEASE_NOTES_v1.0.0.md](RELEASE_NOTES_v1.0.0.md) for the current public
-release summary.
+See [RELEASE_NOTES_v1.1.0.md](RELEASE_NOTES_v1.1.0.md) for the current public
+release summary. The original v1.0.0 baseline notes remain in
+[RELEASE_NOTES_v1.0.0.md](RELEASE_NOTES_v1.0.0.md).
 
 
