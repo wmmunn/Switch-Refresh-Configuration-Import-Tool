@@ -51,6 +51,14 @@ Maps old physical stack member IDs to your new physical member IDs.
 
 > ⚠️ **Design Note on Port Capacity**: Never map two highly populated 48-port legacy switches to the same target switch number (such as `"2": 2` and `"3": 2`). Doing so will cause the tool's mapping engine to throw immediate **Critical Collision** alerts in the GUI audit panel, as multiple old interfaces fight for the exact same target port space (e.g., trying to put both old port `2/0/5` and old port `3/0/5` onto the new target port `2/0/5`).
 
+> ⚠️ **Known Limitation: Many-to-One Member Consolidation**: `stack_member_mappings` maps an old member directly onto a new member's *same* port numbers — it does not currently support splitting or offsetting ports when consolidating two smaller old switches onto one larger new switch.
+>
+> For example, mapping a 24-port old member 2 *and* a 24-port old member 3 both onto a single 48-port new member 2 — intending old member 2 to land on new ports 1–24 and old member 3 to land on new ports 25–48 — is **not yet supported** by `stack_member_mappings` alone. Mapping both old members to the same new member ID will trigger the engine's **Critical Collision** guardrail, since both would translate onto the same physical port range.
+>
+> **Current workaround**: leave the affected old members out of `stack_member_mappings`/`interface_renaming_rules`, and instead provide explicit per-port overrides for every consolidated interface inside `uplink_destinations` (e.g., `"GigabitEthernet3/0/1": "TenGigabitEthernet2/0/25"` for each port you're shifting). This is more tedious but avoids collisions and keeps every mapping decision explicit and reviewable.
+>
+> Port-offset-aware member consolidation is a known gap, not an oversight — see the project roadmap for status.
+
 ### 2. `interface_renaming_rules`
 
 Automates bulk access-port renaming so you don't have to map all 48 ports manually.
