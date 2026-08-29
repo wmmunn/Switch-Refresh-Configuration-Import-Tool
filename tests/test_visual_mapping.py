@@ -283,6 +283,50 @@ class VisualMappingWindowTests(unittest.TestCase):
 
 
 class VisualMappingGuiWiringTests(unittest.TestCase):
+    def test_apply_visual_pairs_through_planner_stages_both_uplinks(self):
+        root = tk.Tk()
+        root.withdraw()
+        try:
+            app = MODULE.SwitchRefreshConfigImportApp(root)
+            root.update_idletasks()
+            source = parse_source_config(MODULE.load_bundled_config_text())
+            schema = build_profile_schema(make_profile())
+            source_cells = classify_source_ports(source, schema)
+            target_cells = build_target_chassis(
+                TargetChassisSpec(access_layout=ACCESS_LAYOUT_GIGABIT)
+            )
+            app.engine_config_file_var.set(MODULE.CONFIG_DISPLAY_NAME)
+            app.engine_template_file_var.set(MODULE.ENGINE_TEMPLATE_DISPLAY_NAME)
+            app._apply_visual_port_mappings(
+                (
+                    PortMappingPair(
+                        "GigabitEthernet0/23",
+                        "TenGigabitEthernet1/1/1",
+                    ),
+                    PortMappingPair(
+                        "GigabitEthernet0/24",
+                        "TenGigabitEthernet1/1/2",
+                    ),
+                ),
+                source_cells,
+                target_cells,
+            )
+            self.assertEqual(app.engine_profile_uplink_mode_var.get(), MODULE.UPLINK_MODE_CUSTOM)
+            self.assertEqual(
+                app.engine_profile_uplink_rows[0][0].get(),
+                "GigabitEthernet0/23",
+            )
+            self.assertEqual(
+                app.engine_profile_uplink_rows[0][1].get(),
+                "TenGigabitEthernet1/1/1",
+            )
+            preview = app.engine_preview_text.get("1.0", "end")
+            self.assertIn("interface TenGigabitEthernet1/1/1", preview)
+            self.assertIn("interface TenGigabitEthernet1/1/2", preview)
+            self.assertNotIn("UNMAPPED uplink", preview)
+        finally:
+            root.destroy()
+
     def test_planner_exposes_open_port_map_control(self):
         root = tk.Tk()
         root.withdraw()
