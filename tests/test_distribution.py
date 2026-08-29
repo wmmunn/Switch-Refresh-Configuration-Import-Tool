@@ -154,6 +154,7 @@ interface GigabitEthernet1/0/52
             widget_text = "\n".join(_collect_widget_text(root))
 
             self.assertIn("Legacy output port prefix", widget_text)
+            self.assertIn("Open Port Map", widget_text)
             self.assertIn(
                 "Extraction Workflow only. Profile Engine uses Target Profile Options.",
                 widget_text,

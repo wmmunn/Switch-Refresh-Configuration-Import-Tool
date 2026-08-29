@@ -25,6 +25,8 @@ It ships with fictional examples only and does not connect to network devices.
 5. Keep new parser behavior narrow, tested, and documented with sanitized
    fixtures.
 6. Avoid adding hard-coded site assumptions outside explicit target profiles.
+7. Keep the Interactive Port Map as a profile builder: it records operator
+   pairs and must not become a second mapping engine.
 
 ## Delivered v1.1 Work
 
@@ -32,6 +34,8 @@ It ships with fictional examples only and does not connect to network devices.
 - Structured source parser, profile schema, mapping engine, and renderer.
 - Audit panel for collisions, unmapped interfaces, member shifts, and flags.
 - Target profile controls for access naming, stack mapping, and uplinks.
+- Interactive Port Map for click-to-pair source and target ports, including
+  uplink slots and port-channel members.
 - Comment-safe renderer output for operator notes and warnings.
 - Expanded tests for engine, renderer, GUI wording, and sanitized behavior.
 

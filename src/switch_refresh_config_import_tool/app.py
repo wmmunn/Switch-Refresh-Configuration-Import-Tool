@@ -19,6 +19,16 @@ from .core import (
     write_text_file,
 )
 from .mapping_engine import build_target_refresh_plan
+from .visual_mapping import (
+    TargetChassisSpec,
+    build_profile_fragments,
+    build_target_chassis,
+    chassis_target_members,
+    classify_source_ports,
+    merge_visual_mappings_into_profile,
+    pairs_from_profile,
+)
+from .visual_mapping_window import open_visual_mapping_window
 from .plan_renderer import (
     ENGINE_ACCESS_PORTS,
     ENGINE_COLLISIONS,
@@ -1187,13 +1197,21 @@ class SwitchRefreshConfigImportApp(LabNotesExtractorApp):
             wraplength=900,
             justify="left",
         ).grid(row=0, column=0, sticky="ew", padx=(0, 12))
+        header_buttons = ttk.Frame(header)
+        header_buttons.grid(row=0, column=1, sticky="e")
+        self._button(
+            header_buttons,
+            "Open Port Map",
+            self.open_visual_port_map,
+            "primary-outline",
+        ).pack(side="left", padx=(0, 8))
         self.engine_profile_toggle_button = self._button(
-            header,
+            header_buttons,
             "Show Options",
             self.toggle_engine_profile_options,
             "secondary-outline",
         )
-        self.engine_profile_toggle_button.grid(row=0, column=1, sticky="e")
+        self.engine_profile_toggle_button.pack(side="left")
 
         details = ttk.Frame(frame, padding=(0, 12, 0, 0))
         details.columnconfigure(1, weight=1)
@@ -1353,6 +1371,112 @@ class SwitchRefreshConfigImportApp(LabNotesExtractorApp):
         ).grid(row=4, column=3, sticky="e", pady=(8, 0))
         self._refresh_engine_profile_options_visibility()
         return frame
+
+    def open_visual_port_map(self):
+        try:
+            config_text = self._read_engine_config_text()
+            profile = self._current_visual_seed_profile()
+            schema = build_profile_schema(profile)
+            source_config = parse_source_config(config_text)
+            source_cells = classify_source_ports(source_config, schema)
+            member_mapping = schema.stack_translation.member_mapping or {1: 1}
+            target_cells = build_target_chassis(
+                TargetChassisSpec(
+                    access_layout=self.engine_profile_layout_var.get()
+                    or ACCESS_LAYOUT_GIGABIT,
+                    custom_target_pattern=self.engine_profile_custom_pattern_var.get(),
+                    target_members=chassis_target_members(member_mapping),
+                )
+            )
+            seed_pairs = pairs_from_profile(profile)
+        except Exception as exc:
+            messagebox.showerror("Port Map Error", str(exc))
+            self.status_var.set("Port map could not be opened. See error message.")
+            return
+
+        def apply_pairs(pairs):
+            self._apply_visual_port_mappings(pairs, source_cells, target_cells)
+
+        open_visual_mapping_window(
+            self.root,
+            source_cells,
+            target_cells,
+            seed_pairs,
+            apply_pairs,
+        )
+
+    def _read_engine_config_text(self) -> str:
+        config_file = self.engine_config_file_var.get().strip()
+        if not config_file:
+            raise ValueError("Please select a sanitized source running-config file.")
+        if config_file != CONFIG_DISPLAY_NAME and not Path(config_file).exists():
+            raise FileNotFoundError(
+                f"Source running-config file not found:\n{config_file}"
+            )
+        if config_file == CONFIG_DISPLAY_NAME:
+            return load_bundled_config_text()
+        return read_text_file(config_file)
+
+    def _current_visual_seed_profile(self) -> dict:
+        profile_file = self.engine_profile_file_var.get().strip()
+        if (
+            profile_file
+            and profile_file != ENGINE_PROFILE_DISPLAY_NAME
+            and Path(profile_file).exists()
+        ):
+            return load_profile_json_text(read_text_file(profile_file))
+
+        return build_custom_engine_profile_dict(
+            self.engine_profile_layout_var.get(),
+            self.engine_profile_custom_pattern_var.get(),
+            self.engine_profile_stack_mapping_var.get(),
+            self._get_engine_profile_uplink_mapping_text(),
+            UPLINK_MODE_CUSTOM,
+        )
+
+    def _apply_visual_port_mappings(self, pairs, source_cells, target_cells):
+        try:
+            fragments = build_profile_fragments(pairs, source_cells, target_cells)
+            self.engine_profile_uplink_mode_var.set(UPLINK_MODE_CUSTOM)
+            self._set_engine_profile_uplink_mappings(fragments.uplink_mappings)
+            profile = build_custom_engine_profile_dict(
+                self.engine_profile_layout_var.get(),
+                self.engine_profile_custom_pattern_var.get(),
+                self.engine_profile_stack_mapping_var.get(),
+                self._get_engine_profile_uplink_mapping_text(),
+                UPLINK_MODE_CUSTOM,
+            )
+            profile = merge_visual_mappings_into_profile(profile, fragments)
+            build_profile_schema(profile)
+            profile_file = self._write_temp_engine_profile(profile)
+            self.engine_profile_file_var.set(str(profile_file))
+            self._run_engine_review_output(allow_preview_without_output=True)
+            self.status_var.set(
+                "Port map applied to this run. Review unmapped uplinks, "
+                "port-channel members, and collisions before using output."
+            )
+        except Exception as exc:
+            messagebox.showerror("Port Map Apply Error", str(exc))
+            self.status_var.set("Port map apply failed. See error message.")
+
+    def _set_engine_profile_uplink_mappings(self, uplink_mappings: dict[str, str]):
+        items = list(uplink_mappings.items())
+        for index, (source_var, target_var) in enumerate(self.engine_profile_uplink_rows):
+            if index < len(items):
+                source_var.set(items[index][0])
+                target_var.set(items[index][1])
+            else:
+                source_var.set("")
+                target_var.set("")
+
+        overflow = items[len(self.engine_profile_uplink_rows):]
+        overflow_text = "\n".join(
+            f"{source}={target}" for source, target in overflow
+        )
+        if self.engine_profile_uplink_mapping_text is not None:
+            self.engine_profile_uplink_mapping_text.delete("1.0", "end")
+            if overflow_text:
+                self.engine_profile_uplink_mapping_text.insert("1.0", overflow_text)
 
     def toggle_engine_profile_options(self):
         self.engine_profile_options_visible.set(

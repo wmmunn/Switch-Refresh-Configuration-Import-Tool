@@ -1061,6 +1061,68 @@ interface GigabitEthernet1/0/48
             "ACCESS_PORT_RANGE_RULE",
         )
 
+    def test_port_channel_member_on_reserved_uplink_target_is_flagged(self):
+        config = """hostname DEMO-PC-ON-UPLINK
+!
+interface GigabitEthernet1/0/1
+ switchport access vlan 20
+ switchport mode access
+!
+interface GigabitEthernet1/0/49
+ description DEMO_PORT_CHANNEL_UPLINK_A
+ switchport trunk allowed vlan 20,99
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface GigabitEthernet1/0/52
+ description DEMO_PORT_CHANNEL_UPLINK_B
+ switchport trunk allowed vlan 20,99
+ switchport mode trunk
+ channel-group 1 mode active
+!
+"""
+        raw_profile = make_profile_dict()
+        raw_profile["stack_translation"]["member_mapping"] = {1: 1}
+        raw_profile["review_gates"]["always_review"] = []
+        raw_profile["interface_translation"]["explicit_mappings"] = {
+            "GigabitEthernet1/0/49": "TenGigabitEthernet1/1/1",
+            "GigabitEthernet1/0/52": "TenGigabitEthernet1/1/2",
+        }
+        raw_profile["uplinks"]["detection"]["known_source_ports"] = [
+            "GigabitEthernet1/0/49",
+            "GigabitEthernet1/0/52",
+        ]
+        raw_profile["uplinks"]["destination"]["mappings"] = {
+            "GigabitEthernet1/0/49": "TenGigabitEthernet1/1/1",
+            "GigabitEthernet1/0/52": "TenGigabitEthernet1/1/2",
+        }
+        source = parse_source_config(config)
+        schema = build_profile_schema(raw_profile)
+
+        plan = build_target_refresh_plan(source, schema)
+        members = {
+            member.source_interface: member
+            for member in plan.port_channels[0].member_interfaces
+        }
+
+        self.assertEqual(len(plan.uplinks), 0)
+        self.assertEqual(
+            members["GigabitEthernet1/0/49"].target_interface,
+            "TenGigabitEthernet1/1/1",
+        )
+        self.assertIn("port_channel_on_uplink_target", plan.review_flags)
+        self.assertTrue(
+            any("GigabitEthernet1/0/49" in warning for warning in plan.warnings)
+        )
+        self.assertEqual(
+            members["GigabitEthernet1/0/49"].reason,
+            "port_channel_on_uplink_target",
+        )
+        self.assertEqual(
+            members["GigabitEthernet1/0/49"].mapping_evidence.review_urgency,
+            "WARNING_PORT_CHANNEL_ON_UPLINK",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -107,6 +107,26 @@ Structured uplink rows should be preferred for common one-to-one mappings, with
 the larger text area retained as an advanced paste-in path for operators who
 need more mappings than the compact row set exposes.
 
+The Interactive Port Map is another profile-builder surface, not a second
+engine. It classifies source ports with the same role order the planner uses:
+port-channel members first, then empty interfaces, then uplink candidates, then
+access ports. That order is what caused recent field misses. A trunk that
+belongs to a channel-group never consumes an uplink destination unless the
+operator maps the member explicitly. A second trunk with no destination stays
+unmapped (blank) instead of inheriting the first uplink's target. Site-default
+uplink generation can still send every listed source to the same
+`TenGigabitEthernet{last_stack_member}/1/8` token; the port map should be used
+when two uplinks need two destinations.
+
+The map draws an operator-owned target faceplate: access ports from the current
+layout, plus a dedicated uplink cage (`TenGigabitEthernet{member}/1/{slot}` by
+default). Apply writes canvas pairs into
+`interface_translation.explicit_mappings` and `uplinks.destination.mappings`,
+then reuses the existing temp-profile preview path. If a port-channel member
+lands on a reserved uplink target, the engine adds
+`port_channel_on_uplink_target` and a warning. The canvas must not invent
+alternate ports when two sources claim one target.
+
 Rendered operator notes, review warnings, and explanatory text inserted into
 lab-sheet configuration placeholders must be emitted as Cisco comment lines.
 Each line should begin with `!` so that review material is skipped if an

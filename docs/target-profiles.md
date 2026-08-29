@@ -2,6 +2,13 @@
 
 The **Target Build Planner** uses a JSON configuration profile to translate your old switch ports to your new switch hardware. Instead of making blind guesses, the engine relies on this file to safely map your stack members, bulk access ports, and static uplinks.
 
+For uplink and port-channel moves that are easy to get wrong in text, use
+**Open Port Map** on the Target Build Planner tab. Click each old port onto the
+new faceplate, including the uplink slot row, then Apply. That writes explicit
+pairs into the profile used for the current run. The map will warn if a second
+uplink is still blank, if two sources share one target, or if a port-channel
+member lands on an uplink slot.
+
 This document explains how to write, modify, and troubleshoot these files.
 
 ---

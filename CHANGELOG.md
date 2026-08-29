@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+- Added an Interactive Port Map on the Target Build Planner for click-to-pair
+  source and target ports, including a dedicated uplink cage.
+- Port-channel members stay visible on the map and are no longer easy to
+  confuse with uplink candidates.
+- The planner now flags port-channel members that land on reserved uplink
+  targets (`port_channel_on_uplink_target`).
+- Unmapped second uplinks, collisions, and port-channel-on-uplink landings are
+  shown on the map before Apply writes the pairs into the run profile.
+
 ## 1.1.0 - 2026-06-20
 
 - Added the Target Build Planner workflow for profile-driven refresh planning.
