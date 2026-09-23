@@ -10,3 +10,6 @@ dist/
 *.log
 *.zip
 *.exe
+
+# Local-only Cursor rules - never publish
+.cursor/
