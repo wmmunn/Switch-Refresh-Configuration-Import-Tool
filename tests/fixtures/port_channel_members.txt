@@ -1,0 +1,14 @@
+hostname sw-hostname
+!
+interface GigabitEthernet1/0/49
+ description DEMO_PORT_CHANNEL_MEMBER_A
+ switchport trunk allowed vlan 20,99
+ switchport mode trunk
+ channel-group 1 mode active
+!
+interface GigabitEthernet1/0/52
+ description DEMO_PORT_CHANNEL_MEMBER_B
+ switchport trunk allowed vlan 20,99
+ switchport mode trunk
+ channel-group 1 mode active
+!

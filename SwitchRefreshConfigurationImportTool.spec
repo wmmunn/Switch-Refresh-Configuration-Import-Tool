@@ -30,7 +30,11 @@ a = Analysis(
             "switch_refresh_config_import_tool/assets",
         ),
     ],
-    hiddenimports=["switch_refresh_config_import_tool.core"],
+    hiddenimports=[
+        "switch_refresh_config_import_tool.core",
+        "switch_refresh_config_import_tool.visual_mapping",
+        "switch_refresh_config_import_tool.visual_mapping_window",
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

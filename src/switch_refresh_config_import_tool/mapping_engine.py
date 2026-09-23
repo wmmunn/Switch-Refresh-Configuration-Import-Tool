@@ -7,6 +7,7 @@ import re
 
 from .engine_models import (
     EngineAuditSummary,
+    FlaggedSourceBlock,
     InterfaceMappingDecision,
     IgnoredInterface,
     InvalidSchemaElementError,
@@ -42,28 +43,54 @@ def build_target_refresh_plan(
     port_channels: list[TargetPortChannel] = []
     ignored_interfaces: list[IgnoredInterface] = []
     review_flags: list[str] = list(schema.review_gates.always_review)
-    warnings: list[str] = []
+    warnings: list[str] = _warnings_from_flagged_blocks(
+        source_config.flagged_blocks,
+        review_flags,
+    )
+    _warn_channel_groups_when_detection_disabled(
+        source_config,
+        schema,
+        review_flags,
+        warnings,
+    )
 
     for source_interface in source_config.interfaces:
-        if _is_port_channel_member(source_interface, schema):
+        role = classify_interface_role(source_interface, schema)
+
+        if role == "port_channel_member":
             continue
 
-        if _is_empty_interface(source_interface):
+        if role == "empty":
             ignored_interfaces.append(
                 IgnoredInterface(
                     source_interface=source_interface.name,
                     reason="empty_interface",
                 )
             )
-        elif _is_uplink_candidate(source_interface, schema):
+        elif role == "ignored":
+            ignored_interfaces.append(
+                IgnoredInterface(
+                    source_interface=source_interface.name,
+                    reason="svi_not_translated",
+                )
+            )
+        elif role == "uplink":
             uplinks.append(_build_uplink(source_interface, schema, review_flags, warnings))
-        elif _is_access_port_candidate(source_interface):
+        elif role == "access":
             access_ports.append(
                 _build_access_port(source_interface, schema, review_flags, warnings)
             )
 
     if schema.port_channels.detect_channel_groups:
         port_channels = _build_port_channels(source_config, schema, review_flags)
+
+    _flag_port_channel_members_on_uplink_targets(
+        port_channels,
+        uplinks,
+        schema,
+        review_flags,
+        warnings,
+    )
 
     _flag_target_interface_collisions(
         access_ports,
@@ -94,6 +121,60 @@ def build_target_refresh_plan(
         warnings=tuple(warnings),
         audit_summary=audit_summary,
     )
+
+
+def _warnings_from_flagged_blocks(
+    flagged_blocks: tuple[FlaggedSourceBlock, ...],
+    review_flags: list[str],
+) -> list[str]:
+    warnings: list[str] = []
+    for block in flagged_blocks:
+        if block.reason == "duplicate_interface_stanza":
+            warnings.append(
+                "Duplicate interface stanza: "
+                f"{block.first_line} appears more than once. "
+                "Both entries were kept for operator review."
+            )
+            flag = "duplicate_interface_stanza"
+        elif block.reason == "unparseable_interface_declaration":
+            warnings.append(
+                f"Unparseable interface declaration: {block.first_line.strip()}."
+            )
+            flag = "unparseable_interface_declaration"
+        else:
+            warnings.append(
+                f"Flagged source block ({block.reason}): {block.first_line}."
+            )
+            flag = "flagged_source_block"
+        if flag not in review_flags:
+            review_flags.append(flag)
+    return warnings
+
+
+def _warn_channel_groups_when_detection_disabled(
+    source_config: SourceSwitchConfig,
+    schema: ProfileSchema,
+    review_flags: list[str],
+    warnings: list[str],
+) -> None:
+    if schema.port_channels.detect_channel_groups:
+        return
+
+    members = [
+        interface.name
+        for interface in source_config.interfaces
+        if interface.channel_group
+    ]
+    if not members:
+        return
+
+    warnings.append(
+        "Port-channel detection is disabled, but channel-group members are "
+        f"present: {', '.join(members)}. Those interfaces were mapped "
+        "individually; turn detection on if they should stay a bundle."
+    )
+    if "port_channel_detection_disabled" not in review_flags:
+        review_flags.append("port_channel_detection_disabled")
 
 
 def _is_access_port_candidate(source_interface: SourceInterface) -> bool:
@@ -326,6 +407,43 @@ def _build_port_channel_member_decision(
         channel_group_mode=source_interface.channel_group_mode,
         is_trunk=source_interface.is_trunk,
     )
+
+
+def parse_source_member_port(
+    source_interface_name: str,
+) -> dict[str, int | str] | None:
+    """Parse member and port numbers from a supported Cisco interface name."""
+    return _match_source_member_port(source_interface_name)
+
+
+def classify_interface_role(
+    source_interface: SourceInterface,
+    schema: ProfileSchema,
+) -> str:
+    """Return the engine role used for a source interface.
+
+    Port-channel members are classified before uplink detection. That matches
+    plan construction: a trunk that belongs to a channel-group is not staged
+    as an uplink, so it will not consume an uplink destination unless the
+    operator provides an explicit member mapping.
+    """
+    lowered_name = source_interface.name.lower()
+    if lowered_name.startswith("vlan") or lowered_name.startswith("port-channel"):
+        return "ignored"
+
+    if _is_port_channel_member(source_interface, schema):
+        return "port_channel_member"
+
+    if _is_empty_interface(source_interface):
+        return "empty"
+
+    if _is_uplink_candidate(source_interface, schema):
+        return "uplink"
+
+    if _is_access_port_candidate(source_interface):
+        return "access"
+
+    return "unplaceable"
 
 
 def translate_interface(
@@ -851,6 +969,85 @@ def _build_audit_summary(
         total_flags_count=total_flags_count,
         is_completely_clean=is_completely_clean,
     )
+
+
+def _reserved_uplink_targets(
+    uplinks: list[TargetUplink],
+    schema: ProfileSchema,
+) -> set[str]:
+    reserved: set[str] = set()
+
+    for raw_target in schema.uplinks.destination.mappings.values():
+        resolved = _resolve_target_tokens(raw_target, schema)
+        if resolved:
+            reserved.add(resolved)
+
+    for uplink in uplinks:
+        if uplink.target_interface:
+            reserved.add(uplink.target_interface)
+
+    return reserved
+
+
+def _flag_port_channel_members_on_uplink_targets(
+    port_channels: list[TargetPortChannel],
+    uplinks: list[TargetUplink],
+    schema: ProfileSchema,
+    review_flags: list[str],
+    warnings: list[str],
+) -> None:
+    reserved_targets = _reserved_uplink_targets(uplinks, schema)
+    if not reserved_targets:
+        return
+
+    for port_channel_index, port_channel in enumerate(port_channels):
+        updated_members = []
+        changed = False
+
+        for member in port_channel.member_interfaces:
+            target_interface = member.target_interface
+            if target_interface is None or target_interface not in reserved_targets:
+                updated_members.append(member)
+                continue
+
+            warning = (
+                "Port-channel member "
+                f"{member.source_interface} is mapped onto reserved uplink "
+                f"target {target_interface}."
+            )
+            if warning not in warnings:
+                warnings.append(warning)
+            if "port_channel_on_uplink_target" not in review_flags:
+                review_flags.append("port_channel_on_uplink_target")
+
+            notes = member.mapping_evidence.operator_notes
+            extra = (
+                f" This member lands on reserved uplink target {target_interface}; "
+                "confirm the bundle should occupy an uplink slot."
+            )
+            updated_members.append(
+                replace(
+                    member,
+                    review_required=True,
+                    reason="port_channel_on_uplink_target",
+                    mapping_evidence=replace(
+                        member.mapping_evidence,
+                        review_urgency="WARNING_PORT_CHANNEL_ON_UPLINK",
+                        operator_notes=f"{notes}{extra}" if notes else extra.strip(),
+                    ),
+                )
+            )
+            changed = True
+
+        if changed:
+            review_items = list(port_channel.review_flags)
+            if "port_channel_on_uplink_target" not in review_items:
+                review_items.append("port_channel_on_uplink_target")
+            port_channels[port_channel_index] = replace(
+                port_channel,
+                member_interfaces=tuple(updated_members),
+                review_flags=tuple(review_items),
+            )
 
 
 def _flag_target_interface_collisions(

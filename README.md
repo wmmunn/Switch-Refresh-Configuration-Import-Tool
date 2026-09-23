@@ -29,6 +29,8 @@ configuration snippets.
   mapping.
 - Supports target profiles for access-port naming, mixed target interface
   layouts, stack member mapping, and explicit uplink destinations.
+- Adds an Interactive Port Map so operators can click source ports onto
+  target access ports and uplink slots before a planner run.
 - Exposes collisions, unmapped interfaces, stack member shifts, unsupported
   interface names, trunk evidence, and malformed parser blocks instead of
   silently guessing.
@@ -98,6 +100,14 @@ The Target Build Planner does not infer a target design from switch model names
 or source interface names. Target interface naming is profile-owned. Operators
 can use the visible Target Profile Options controls for common layouts, or save
 and review the generated JSON profile when deeper customization is needed.
+
+Use **Open Port Map** when uplink or port-channel destinations are not obvious
+from the text fields. The map shows source access ports, trunks, and
+port-channel members next to a target faceplate that includes a dedicated
+uplink cage. Click a source port, then a target port. Apply writes those pairs
+into `explicit_mappings` and uplink destinations and reruns the planner preview.
+Unmapped uplinks stay blank on purpose; port-channel members that land on an
+uplink slot are flagged for review.
 
 ## Template Customization
 

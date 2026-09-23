@@ -47,6 +47,11 @@ SUPPORTED_REVIEW_GATES = {
     "target_interface_collision",
     "malformed_trunk_allowed_vlans",
     "target_profile_verification",
+    "port_channel_on_uplink_target",
+    "duplicate_interface_stanza",
+    "unparseable_interface_declaration",
+    "flagged_source_block",
+    "port_channel_detection_disabled",
 }
 
 SUPPORTED_TEMPLATE_FIELDS = {

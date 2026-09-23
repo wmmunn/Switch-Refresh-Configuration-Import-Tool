@@ -54,6 +54,7 @@ def _find_single_value(lines: list[str], prefix: str) -> str | None:
 def _parse_interfaces(lines: list[str]) -> tuple[list[SourceInterface], list[FlaggedSourceBlock]]:
     interfaces: list[SourceInterface] = []
     flagged_blocks: list[FlaggedSourceBlock] = []
+    seen_names: set[str] = set()
     current_name: str | None = None
     current_body: list[str] = []
     flagged_first_line: str | None = None
@@ -79,7 +80,13 @@ def _parse_interfaces(lines: list[str]) -> tuple[list[SourceInterface], list[Fla
 
         if stripped == "interface" or stripped.startswith("interface "):
             if current_name is not None:
-                interfaces.append(_build_interface(current_name, current_body))
+                _record_parsed_interface(
+                    interfaces,
+                    flagged_blocks,
+                    seen_names,
+                    current_name,
+                    current_body,
+                )
 
             if stripped == "interface":
                 interface_name = ""
@@ -98,7 +105,13 @@ def _parse_interfaces(lines: list[str]) -> tuple[list[SourceInterface], list[Fla
 
         if stripped == "!":
             if current_name is not None:
-                interfaces.append(_build_interface(current_name, current_body))
+                _record_parsed_interface(
+                    interfaces,
+                    flagged_blocks,
+                    seen_names,
+                    current_name,
+                    current_body,
+                )
                 current_name = None
                 current_body = []
             continue
@@ -107,7 +120,13 @@ def _parse_interfaces(lines: list[str]) -> tuple[list[SourceInterface], list[Fla
             current_body.append(line)
 
     if current_name is not None:
-        interfaces.append(_build_interface(current_name, current_body))
+        _record_parsed_interface(
+            interfaces,
+            flagged_blocks,
+            seen_names,
+            current_name,
+            current_body,
+        )
 
     if flagged_first_line is not None:
         flagged_blocks.append(
@@ -119,6 +138,25 @@ def _parse_interfaces(lines: list[str]) -> tuple[list[SourceInterface], list[Fla
         )
 
     return interfaces, flagged_blocks
+
+
+def _record_parsed_interface(
+    interfaces: list[SourceInterface],
+    flagged_blocks: list[FlaggedSourceBlock],
+    seen_names: set[str],
+    name: str,
+    body: list[str],
+) -> None:
+    if name in seen_names:
+        flagged_blocks.append(
+            FlaggedSourceBlock(
+                first_line=f"interface {name}",
+                reason="duplicate_interface_stanza",
+                body_lines=tuple(body),
+            )
+        )
+    seen_names.add(name)
+    interfaces.append(_build_interface(name, body))
 
 
 def _build_interface(name: str, body_lines: list[str]) -> SourceInterface:

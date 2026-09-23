@@ -1,0 +1,12 @@
+hostname sw-hostname
+!
+interface GigabitEthernet1/0/1
+ description Access Port
+ switchport access vlan 20
+ switchport mode access
+!
+interface GigabitEthernet1/0/1
+ description Access Port
+ switchport access vlan 20
+ switchport mode access
+!

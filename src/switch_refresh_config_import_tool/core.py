@@ -48,6 +48,12 @@ UNSUPPORTED_OR_REVIEW = [
     "macro auto",
 ]
 
+# Global vlan ... commands that are not VLAN database entries and must not be emitted.
+
+VLAN_DENYLIST = [
+    "vlan internal allocation policy",
+]
+
 
 # If no RADIUS configuration is detected in the existing running-config,
 # these legacy 802.1X / authentication lines are stripped from transferred
@@ -165,7 +171,7 @@ def extract_management_vlan_ip(config_text):
         )
 
         if ip_match:
-            vlan_id = interface_name.replace("Vlan", "").replace("vlan", "").strip()
+            vlan_id = interface_name[4:].strip()
             return vlan_id, ip_match.group(1), ip_match.group(2)
 
     return "NOT FOUND", "NOT FOUND", "NOT FOUND"
@@ -187,6 +193,9 @@ def extract_vlans(config_text):
 
     while i < len(lines):
         line = lines[i].strip()
+        if line.lower().startswith(tuple(VLAN_DENYLIST)):
+            i += 1
+            continue
         vlan_match = re.match(r"^vlan\s+(.+)$", line, flags=re.I)
 
         if vlan_match:

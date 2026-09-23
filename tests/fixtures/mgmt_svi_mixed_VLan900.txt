@@ -1,0 +1,6 @@
+hostname sw-hostname
+!
+interface VLan900
+ description Management
+ ip address 192.0.2.10 255.255.255.0
+!
